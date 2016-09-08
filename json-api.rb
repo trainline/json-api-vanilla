@@ -148,5 +148,9 @@ module JsonApi
     def find(type, id)
       @objects[[type, id]]
     end
+
+    def find_all(type)
+      @objects.values.select { |obj| obj.type == type }
+    end
   end
 end

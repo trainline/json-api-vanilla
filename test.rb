@@ -7,5 +7,6 @@ p doc.rel_links[doc.data[0].comments]['related'] == "http://example.com/articles
 p doc.links[doc.data[0].author]['self'] == "http://example.com/people/9"
 p doc.links[doc.data]['self'] == "http://example.com/articles"
 p doc.find('comments', '5').body == "First!"
+p doc.find_all('comments').size == 2
 p doc.keys[doc.find('people', '9')]['first-name'] == "Dan"
 p doc.meta[doc.data]['from'] == "http://jsonapi.org"
