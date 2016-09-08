@@ -68,7 +68,7 @@ module JsonApi
       objects[[o_hash['type'], o_hash['id']]]
     end
     links[data] = hash['links']
-    Document.new(data, links: links, relLinks: relLinks,
+    Document.new(data, links: links, relLinks: relLinks, objects: objects,
                  container: container, superclass: superclass)
   end
 
@@ -115,13 +115,18 @@ module JsonApi
 
   class Document
     attr_reader :data, :links, :relLinks, :container, :superclass
-    def initialize(data, links: {}, relLinks: {},
+    def initialize(data, links: {}, relLinks: {}, objects: {},
                    container: Module.new, superclass: Class.new)
       @data = data
       @links = links
       @relLinks = relLinks
+      @objects = objects
       @container = container
       @superclass = superclass
+    end
+
+    def find(type, id)
+      @objects[[type, id]]
     end
   end
 end
