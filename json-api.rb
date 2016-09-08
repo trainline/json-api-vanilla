@@ -17,6 +17,7 @@ module JsonApi
     objects = {}
     links = {}  # Object links.
     rel_links = {}  # Relationship links.
+    meta = {}  # Meta information.
     # Map from objects to map from keys to values, for use when two keys are
     # converted to the same ruby method identifier.
     original_keys = {}
@@ -58,9 +59,8 @@ module JsonApi
           ref = ref || Object.new
           set_key(obj, key, ref, original_keys)
 
-          if value['links']
-            rel_links[ref] = value['links']
-          end
+          rel_links[ref] = value['links']
+          meta[ref] = value['meta']
         end
       end
     end
@@ -70,7 +70,8 @@ module JsonApi
       objects[[o_hash['type'], o_hash['id']]]
     end
     links[data] = hash['links']
-    Document.new(data, links: links, rel_links: rel_links,
+    meta[data] = hash['meta']
+    Document.new(data, links: links, rel_links: rel_links, meta: meta,
                  objects: objects, keys: original_keys,
                  container: container, superclass: superclass)
   end
@@ -129,12 +130,15 @@ module JsonApi
   end
 
   class Document
-    attr_reader :data, :links, :rel_links, :keys, :container, :superclass
-    def initialize(data, links: {}, rel_links: {}, keys: {}, objects: {},
+    attr_reader :data, :links, :rel_links, :meta, :keys,
+      :container, :superclass
+    def initialize(data, links: {}, rel_links: {}, meta: {},
+                   keys: {}, objects: {},
                    container: Module.new, superclass: Class.new)
       @data = data
       @links = links
       @rel_links = rel_links
+      @meta = meta
       @keys = keys
       @objects = objects
       @container = container
