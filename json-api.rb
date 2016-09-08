@@ -5,6 +5,10 @@ module JsonApi
   def self.parse(json)
     hash = JSON.parse(json)
 
+    # Object storage.
+    container = Module.new
+    superclass = Class.new
+
     data_hash = if hash['data'].is_a?(Array)
       hash['data']
     else
@@ -16,7 +20,7 @@ module JsonApi
     # Store them in this hash from [type, id] to the object.
     objects = {}
     obj_hashes.each do |o_hash|
-      klass = self.prepare_class(o_hash)
+      klass = self.prepare_class(o_hash, superclass, container)
       obj = klass.new
       obj.type = o_hash['type']
       obj.id = o_hash['id']
@@ -31,7 +35,7 @@ module JsonApi
 
     # Now that all objects have been created, we can link everything together.
     obj_hashes.each do |o_hash|
-      klass = Object.const_get(self.ruby_class(o_hash['type']).to_sym)
+      klass = container.const_get(self.ruby_class(o_hash['type']).to_sym)
       obj = objects[[o_hash['type'], o_hash['id']]]
       if o_hash['relationships'] != nil
         o_hash['relationships'].each do |key, value|
@@ -59,15 +63,15 @@ module JsonApi
     data = data_hash.map do |o_hash|
       objects[[o_hash['type'], o_hash['id']]]
     end
-    Document.new(data)
+    Document.new(data, container: container, superclass: superclass)
   end
 
-  def self.prepare_class(hash)
+  def self.prepare_class(hash, superclass, container)
     name = self.ruby_class(hash['type']).to_sym
-    if Object.const_defined?(name)
-      klass = Object.const_get(name)
+    if container.const_defined?(name)
+      klass = container.const_get(name)
     else
-      klass = self.generate_object(name)
+      klass = self.generate_object(name, superclass, container)
     end
     self.add_method(klass, 'id')
     self.add_method(klass, 'type')
@@ -79,9 +83,9 @@ module JsonApi
     klass
   end
 
-  def self.generate_object(ruby_name)
-    klass = Class.new(Base)
-    Object.const_set(ruby_name, klass)
+  def self.generate_object(ruby_name, superclass, container)
+    klass = Class.new(superclass)
+    container.const_set(ruby_name, klass)
     klass
   end
 
@@ -104,15 +108,11 @@ module JsonApi
   end
 
   class Document
-    attr_reader :data
-    def initialize(data)
+    attr_reader :data, :container, :superclass
+    def initialize(data, container: Module.new, superclass: Class.new)
       @data = data
+      @container = container
+      @superclass = superclass
     end
   end
-
-  # All objects are a subclass of this.
-  class Base; end
-
-  # All objects have classes in this module.
-  module Object; end
 end
