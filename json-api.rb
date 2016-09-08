@@ -22,16 +22,16 @@ module JsonApi
     original_keys = {}
 
     obj_hashes.each do |o_hash|
-      klass = self.prepare_class(o_hash, superclass, container)
+      klass = prepare_class(o_hash, superclass, container)
       obj = klass.new
       obj.type = o_hash['type']
       obj.id = o_hash['id']
-      if o_hash['attributes'] != nil
+      if o_hash['attributes']
         o_hash['attributes'].each do |key, value|
-          self.set_key(obj, key, value, original_keys)
+          set_key(obj, key, value, original_keys)
         end
       end
-      if o_hash['links'] != nil
+      if o_hash['links']
         links[obj] = o_hash['links']
       end
       objects[[obj.type, obj.id]] = obj
@@ -39,11 +39,11 @@ module JsonApi
 
     # Now that all objects have been created, we can link everything together.
     obj_hashes.each do |o_hash|
-      klass = container.const_get(self.ruby_class(o_hash['type']).to_sym)
+      klass = container.const_get(ruby_class_name(o_hash['type']).to_sym)
       obj = objects[[o_hash['type'], o_hash['id']]]
-      if o_hash['relationships'] != nil
+      if o_hash['relationships']
         o_hash['relationships'].each do |key, value|
-          if value['data'] != nil
+          if value['data']
             data = value['data']
             if data.is_a?(Array)
               # One-to-many relationship.
@@ -56,9 +56,9 @@ module JsonApi
           end
 
           ref = ref || Object.new
-          self.set_key(obj, key, ref, original_keys)
+          set_key(obj, key, ref, original_keys)
 
-          if value['links'] != nil
+          if value['links']
             rel_links[ref] = value['links']
           end
         end
@@ -76,18 +76,18 @@ module JsonApi
   end
 
   def self.prepare_class(hash, superclass, container)
-    name = self.ruby_class(hash['type']).to_sym
+    name = ruby_class_name(hash['type']).to_sym
     if container.const_defined?(name)
       klass = container.const_get(name)
     else
-      klass = self.generate_object(name, superclass, container)
+      klass = generate_object(name, superclass, container)
     end
-    self.add_method(klass, 'id')
-    self.add_method(klass, 'type')
-    attr_keys = (hash['attributes'] != nil) ? hash['attributes'].keys : []
-    rel_keys = (hash['relationships'] != nil) ? hash['relationships'].keys : []
+    add_accessor(klass, 'id')
+    add_accessor(klass, 'type')
+    attr_keys = hash['attributes'] ? hash['attributes'].keys : []
+    rel_keys = hash['relationships'] ? hash['relationships'].keys : []
     (attr_keys + rel_keys).each do |key|
-      self.add_method(klass, key)
+      add_accessor(klass, key)
     end
     klass
   end
@@ -98,8 +98,8 @@ module JsonApi
     klass
   end
 
-  def self.add_method(klass, name)
-    ruby_name = self.ruby_ident(name)
+  def self.add_accessor(klass, name)
+    ruby_name = ruby_ident_name(name)
     if !klass.method_defined?(ruby_name)
       klass.send(:attr_accessor, ruby_name)
     end
@@ -109,20 +109,20 @@ module JsonApi
   # original_keys is a map from objects to a map from String keys to their
   # values.
   def self.set_key(obj, key, value, original_keys)
-    ruby_key = self.ruby_ident(key)
+    ruby_key = ruby_ident_name(key)
     obj.send("#{ruby_key}=", value)
     original_keys[obj] ||= {}
     original_keys[obj][key] = value
   end
 
-  # Convert a key String to a String that is a valid Ruby class name.
-  def self.ruby_class(key)
-    key.scan(/[a-zA-Z_][a-zA-Z_0-9]+/).map(&:capitalize).join
+  # Convert a name String to a String that is a valid Ruby class name.
+  def self.ruby_class_name(name)
+    name.scan(/[a-zA-Z_][a-zA-Z_0-9]+/).map(&:capitalize).join
   end
 
-  # Convert a key String to a String that is a valid snake-case Ruby identifier.
-  def self.ruby_ident(key)
-    key.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+  # Convert a name String to a String that is a valid snake-case Ruby identifier.
+  def self.ruby_ident_name(name)
+    name.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
        .gsub(/([a-z\d])([A-Z])/,'\1_\2')
        .tr("-", "_")
        .downcase
