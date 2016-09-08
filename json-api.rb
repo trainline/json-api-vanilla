@@ -15,8 +15,12 @@ module JsonApi
     # Create all the objects.
     # Store them in the `objects` hash from [type, id] to the object.
     objects = {}
-    links = {}
-    rel_links = {}
+    links = {}  # Object links.
+    rel_links = {}  # Relationship links.
+    # Map from objects to map from keys to values, for use when two keys are
+    # converted to the same ruby method identifier.
+    original_keys = {}
+
     obj_hashes.each do |o_hash|
       klass = self.prepare_class(o_hash, superclass, container)
       obj = klass.new
@@ -24,8 +28,7 @@ module JsonApi
       obj.id = o_hash['id']
       if o_hash['attributes'] != nil
         o_hash['attributes'].each do |key, value|
-          ruby_key = self.ruby_ident(key)
-          obj.send("#{ruby_key}=", value)
+          self.set_key(obj, key, value, original_keys)
         end
       end
       if o_hash['links'] != nil
@@ -53,8 +56,7 @@ module JsonApi
           end
 
           ref = ref || Object.new
-          ruby_key = self.ruby_ident(key)
-          obj.send("#{ruby_key}=", ref)
+          self.set_key(obj, key, ref, original_keys)
 
           if value['links'] != nil
             rel_links[ref] = value['links']
@@ -68,7 +70,8 @@ module JsonApi
       objects[[o_hash['type'], o_hash['id']]]
     end
     links[data] = hash['links']
-    Document.new(data, links: links, rel_links: rel_links, objects: objects,
+    Document.new(data, links: links, rel_links: rel_links,
+                 objects: objects, keys: original_keys,
                  container: container, superclass: superclass)
   end
 
@@ -102,6 +105,16 @@ module JsonApi
     end
   end
 
+  # Set a value to an object's key through its setter.
+  # original_keys is a map from objects to a map from String keys to their
+  # values.
+  def self.set_key(obj, key, value, original_keys)
+    ruby_key = self.ruby_ident(key)
+    obj.send("#{ruby_key}=", value)
+    original_keys[obj] ||= {}
+    original_keys[obj][key] = value
+  end
+
   def self.ruby_class(key)
     key.scan(/[a-zA-Z_][a-zA-Z_0-9]+/).map(&:capitalize).join
   end
@@ -114,12 +127,13 @@ module JsonApi
   end
 
   class Document
-    attr_reader :data, :links, :rel_links, :container, :superclass
-    def initialize(data, links: {}, rel_links: {}, objects: {},
+    attr_reader :data, :links, :rel_links, :keys, :container, :superclass
+    def initialize(data, links: {}, rel_links: {}, keys: {}, objects: {},
                    container: Module.new, superclass: Class.new)
       @data = data
       @links = links
       @rel_links = rel_links
+      @keys = keys
       @objects = objects
       @container = container
       @superclass = superclass
