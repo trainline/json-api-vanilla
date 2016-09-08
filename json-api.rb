@@ -13,8 +13,10 @@ module JsonApi
     obj_hashes = (hash['included'] || []) + data_hash
 
     # Create all the objects.
-    # Store them in this hash from [type, id] to the object.
+    # Store them in the `objects` hash from [type, id] to the object.
     objects = {}
+    links = {}
+    relLinks = {}
     obj_hashes.each do |o_hash|
       klass = self.prepare_class(o_hash, superclass, container)
       obj = klass.new
@@ -26,11 +28,13 @@ module JsonApi
           obj.send("#{ruby_key}=", value)
         end
       end
+      if o_hash['links'] != nil
+        links[obj] = o_hash['links']
+      end
       objects[[obj.type, obj.id]] = obj
     end
 
     # Now that all objects have been created, we can link everything together.
-    links = {}
     obj_hashes.each do |o_hash|
       klass = container.const_get(self.ruby_class(o_hash['type']).to_sym)
       obj = objects[[o_hash['type'], o_hash['id']]]
@@ -53,7 +57,7 @@ module JsonApi
           obj.send("#{ruby_key}=", ref)
 
           if value['links'] != nil
-            links[ref] = value['links']
+            relLinks[ref] = value['links']
           end
         end
       end
@@ -63,7 +67,8 @@ module JsonApi
     data = data_hash.map do |o_hash|
       objects[[o_hash['type'], o_hash['id']]]
     end
-    Document.new(data, links: links, container: container, superclass: superclass)
+    Document.new(data, links: links, relLinks: relLinks,
+                 container: container, superclass: superclass)
   end
 
   def self.prepare_class(hash, superclass, container)
@@ -108,11 +113,12 @@ module JsonApi
   end
 
   class Document
-    attr_reader :data, :links, :container, :superclass
-    def initialize(data, links: {},
+    attr_reader :data, :links, :relLinks, :container, :superclass
+    def initialize(data, links: {}, relLinks: {},
                    container: Module.new, superclass: Class.new)
       @data = data
       @links = links
+      @relLinks = relLinks
       @container = container
       @superclass = superclass
     end
