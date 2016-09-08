@@ -9,11 +9,7 @@ module JsonApi
     container = Module.new
     superclass = Class.new
 
-    data_hash = if hash['data'].is_a?(Array)
-      hash['data']
-    else
-      [hash['data']]
-    end
+    data_hash = Array(hash['data'])
     obj_hashes = (hash['included'] || []) + data_hash
 
     # Create all the objects.
