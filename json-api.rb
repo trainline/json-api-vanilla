@@ -67,6 +67,7 @@ module JsonApi
     data = data_hash.map do |o_hash|
       objects[[o_hash['type'], o_hash['id']]]
     end
+    links[data] = hash['links']
     Document.new(data, links: links, relLinks: relLinks,
                  container: container, superclass: superclass)
   end
