@@ -115,15 +115,17 @@ module JsonApi
     original_keys[obj][key] = value
   end
 
+  # Convert a key String to a String that is a valid Ruby class name.
   def self.ruby_class(key)
     key.scan(/[a-zA-Z_][a-zA-Z_0-9]+/).map(&:capitalize).join
   end
 
+  # Convert a key String to a String that is a valid snake-case Ruby identifier.
   def self.ruby_ident(key)
-    s = self.ruby_class(key)
-    # We convert the slice to string in case it is nil
-    # (eg, the key has only one character).
-    s[0].downcase + s.slice(1..-1).to_s
+    key.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+       .gsub(/([a-z\d])([A-Z])/,'\1_\2')
+       .tr("-", "_")
+       .downcase
   end
 
   class Document
