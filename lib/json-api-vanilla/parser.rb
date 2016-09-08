@@ -1,7 +1,8 @@
 # Copyright © Trainline.com Limited. All rights reserved. See LICENSE.txt in the project root for license information.
 require "json"
 
-module JsonApi
+module JSON::Api; end
+module JSON::Api::Vanilla
   def self.parse(json)
     hash = JSON.parse(json)
 
