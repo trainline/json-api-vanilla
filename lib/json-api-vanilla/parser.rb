@@ -3,6 +3,17 @@ require "json"
 
 module JSON::Api; end
 module JSON::Api::Vanilla
+
+  # Convert a String JSON API payload to vanilla Ruby objects.
+  #
+  # Example:
+  #   >> json = IO.read("articles.json")  # From http://jsonapi.org
+  #   >> doc = JSON::Api::Vanilla.parse(json)
+  #   >> doc.data[0].comments[1].author.last_name
+  #   => "Gebhardt"
+  #
+  # @param json [String] the JSON API payload.
+  # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
   def self.parse(json)
     hash = JSON.parse(json)
 
@@ -122,7 +133,8 @@ module JSON::Api::Vanilla
     name.scan(/[a-zA-Z_][a-zA-Z_0-9]+/).map(&:capitalize).join
   end
 
-  # Convert a name String to a String that is a valid snake-case Ruby identifier.
+  # Convert a name String to a String that is a valid snake-case Ruby
+  # identifier.
   def self.ruby_ident_name(name)
     name.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
        .gsub(/([a-z\d])([A-Z])/,'\1_\2')
@@ -131,8 +143,21 @@ module JSON::Api::Vanilla
   end
 
   class Document
-    attr_reader :data, :links, :rel_links, :meta, :keys,
-      :container, :superclass
+    # @return [Object, Array<Object>] the content of the JSON API data.
+    attr_reader :data
+    # @return [Hash] a map from objects (obtained from .data) to their links,
+    #   as a Hash.
+    attr_reader :links
+    # @return [Hash] a map from objects' relationships (obtained from .data)
+    #   to the links defined in that relationship, as a Hash.
+    attr_reader :rel_links
+    # @return [Hash] a map from objects to their meta information (a Hash).
+    attr_reader :meta
+    # @return [Hash] a map from objects to a Hash from their original field
+    #   names (non-snake_case'd) to the corresponding object.
+    attr_reader :keys
+    attr_reader :container
+    attr_reader :superclass
     def initialize(data, links: {}, rel_links: {}, meta: {},
                    keys: {}, objects: {},
                    container: Module.new, superclass: Class.new)
@@ -146,10 +171,19 @@ module JSON::Api::Vanilla
       @superclass = superclass
     end
 
+    # Get a JSON API object.
+    #
+    # @param type [String] the type of the object we want returned.
+    # @param id [String] its id.
+    # @return [Object] the object with that type and id.
     def find(type, id)
       @objects[[type, id]]
     end
 
+    # Get all JSON API objects of a given type.
+    #
+    # @param type [String] the type of the objects we want returned.
+    # @return [Array<Object>] the list of objects with that type.
     def find_all(type)
       @objects.values.select { |obj| obj.type == type }
     end
