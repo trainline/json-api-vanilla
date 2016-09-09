@@ -21,8 +21,13 @@ module JSON::Api::Vanilla
     container = Module.new
     superclass = Class.new
 
-    data_hash = Array(hash['data'])
-    obj_hashes = (hash['included'] || []) + data_hash
+    data_hash = hash['data']
+    data_hash_array = if data_hash.is_a?(Array)
+      data_hash
+    else
+      [data_hash]
+    end
+    obj_hashes = (hash['included'] || []) + data_hash_array
 
     # Create all the objects.
     # Store them in the `objects` hash from [type, id] to the object.
@@ -78,8 +83,12 @@ module JSON::Api::Vanilla
     end
 
     # Create the main object.
-    data = data_hash.map do |o_hash|
-      objects[[o_hash['type'], o_hash['id']]]
+    data = if data_hash.is_a?(Array)
+      data_hash.map do |o_hash|
+        objects[[o_hash['type'], o_hash['id']]]
+      end
+    else
+      objects[[data_hash['type'], data_hash['id']]]
     end
     links[data] = hash['links']
     meta[data] = hash['meta']

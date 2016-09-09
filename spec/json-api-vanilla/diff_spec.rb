@@ -35,4 +35,24 @@ describe JSON::Api::Vanilla do
   it "should give access to meta information" do
     expect(doc.meta[doc.data]['from']).to eql("http://jsonapi.org")
   end
+
+  it "should support reference cycles" do
+    json = <<-JSON
+    {
+      "data": {
+        "type": "cycle",
+        "id": "1",
+        "relationships": { "cycle": { "data": { "type": "cycle", "id": "2" } } }
+      },
+      "included": [{
+        "type": "cycle",
+        "id": "2",
+        "attributes": { "body": "content" },
+        "relationships": { "cycle": { "data": { "type": "cycle", "id": "2" } } }
+      }]
+    }
+    JSON
+    doc = JSON::Api::Vanilla.parse(json)
+    expect(doc.data.cycle.cycle.cycle.body).to eql("content")
+  end
 end
