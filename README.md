@@ -11,6 +11,24 @@ doc = JSON::Api::Vanilla.parse(json)
 doc.data[0].comments[1].author.last_name  # "Gebhardt"
 ```
 
+Compare with [jsonapi](https://github.com/beauby/jsonapi):
+
+```ruby
+# gem install jsonapi --pre
+require "jsonapi"
+json = IO.read("articles.json")
+doc = JSONAPI.parse(json)
+comment_ref = doc.data[0].relationships.comments.data[1]
+comment = doc.included.select do |obj|
+  obj.type == comment_ref.type && obj.id == comment_ref.id
+end[0]
+author_ref = comment.relationships.author.data
+author = doc.included.select do |obj|
+  obj.type == author_ref.type && obj.id == author_ref.id
+end[0]
+author.attributes['last-name']
+```
+
 # Documentation
 
 `JSON::Api::Vanilla.parse(json_string)` returns a document with the following
