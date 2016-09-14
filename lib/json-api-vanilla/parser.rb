@@ -16,7 +16,21 @@ module JSON::Api::Vanilla
   # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
   def self.parse(json)
     hash = JSON.parse(json)
+    build(hash)
+  end
 
+  # Convert a ruby hash JSON API representation to vanilla Ruby objects.
+  # Similar to .parse but takes hash as a parameter.
+  #
+  # Example:
+  #   >> hash = { errors: [{ source: { pointer: "" }, detail:  "Missing `data` Member at document's top level." }]}
+  #   >> doc = JSON::Api::Vanilla.build(hash)
+  #   >> doc.errors.first["detail"]
+  #   => "Missing `data` Member at document's top level."
+  #
+  # @param hash [Hash] parsed JSON API payload.
+  # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
+  def self.build(hash)
     # Object storage.
     container = Module.new
     superclass = Class.new
