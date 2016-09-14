@@ -25,9 +25,10 @@ module JSON::Api::Vanilla
     data_hash_array = if data_hash.is_a?(Array)
       data_hash
     else
-      [data_hash]
+      [data_hash].compact
     end
     obj_hashes = (hash['included'] || []) + data_hash_array
+    errors = hash['errors']
 
     # Create all the objects.
     # Store them in the `objects` hash from [type, id] to the object.
@@ -87,13 +88,13 @@ module JSON::Api::Vanilla
       data_hash.map do |o_hash|
         objects[[o_hash['type'], o_hash['id']]]
       end
-    else
+    elsif data_hash
       objects[[data_hash['type'], data_hash['id']]]
     end
     links[data] = hash['links']
     meta[data] = hash['meta']
     Document.new(data, links: links, rel_links: rel_links, meta: meta,
-                 objects: objects, keys: original_keys,
+                 objects: objects, keys: original_keys, errors: errors,
                  container: container, superclass: superclass)
   end
 
@@ -162,13 +163,15 @@ module JSON::Api::Vanilla
     attr_reader :rel_links
     # @return [Hash] a map from objects to their meta information (a Hash).
     attr_reader :meta
+    # @return [Array] a list of errors, if any, otherwise nil.
+    attr_reader :errors
     # @return [Hash] a map from objects to a Hash from their original field
     #   names (non-snake_case'd) to the corresponding object.
     attr_reader :keys
     attr_reader :container
     attr_reader :superclass
     def initialize(data, links: {}, rel_links: {}, meta: {},
-                   keys: {}, objects: {},
+                   keys: {}, objects: {}, errors: [],
                    container: Module.new, superclass: Class.new)
       @data = data
       @links = links
@@ -176,6 +179,7 @@ module JSON::Api::Vanilla
       @meta = meta
       @keys = keys
       @objects = objects
+      @errors = errors
       @container = container
       @superclass = superclass
     end

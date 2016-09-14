@@ -35,6 +35,7 @@ author.attributes['last-name']
 fields:
 
 - `data` is an object corresponding to the JSON API's data object.
+- `errors` is an array containing [errors](http://jsonapi.org/format/#error-objects). Each error is a Hash.
 - `links` is a Hash from objects (obtained from `data`) to their links, as a
   Hash.
 - `rel_links` is a Hash from objects' relationships (obtained from `data`) to
