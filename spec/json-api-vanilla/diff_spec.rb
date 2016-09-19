@@ -1,9 +1,9 @@
 # Copyright © Trainline.com Limited. All rights reserved. See LICENSE.txt in the project root for license information.
 require 'spec_helper'
 
-doc = JSON::Api::Vanilla.parse(IO.read("#{__dir__}/example.json"))
-
 describe JSON::Api::Vanilla do
+  let(:doc) { JSON::Api::Vanilla.parse(IO.read("#{__dir__}/example.json")) }
+
   it "should cross arrays and fields of objects" do
     expect(doc.data[0].comments[1].author.last_name).to eql("Gebhardt")
   end
@@ -54,5 +54,24 @@ describe JSON::Api::Vanilla do
     JSON
     doc = JSON::Api::Vanilla.parse(json)
     expect(doc.data.cycle.cycle.cycle.body).to eql("content")
+  end
+
+  it "should support errors when present" do
+    json = <<-JSON
+    {
+      "errors": [{
+        "status": "400",
+        "detail": "JSON parse error - Expecting property name at line 1 column 2 (char 1)."
+      }]
+    }
+    JSON
+    doc = JSON::Api::Vanilla.parse(json)
+    expect(doc.errors.size).to eql(1)
+    expect(doc.errors.first["status"]).to eql("400")
+    expect(doc.errors.first["detail"]).to eql("JSON parse error - Expecting property name at line 1 column 2 (char 1).")
+  end
+
+  it "should return nil for errors when there are no errors" do
+    expect(doc.errors).to be_nil
   end
 end
