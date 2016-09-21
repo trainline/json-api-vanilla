@@ -74,4 +74,15 @@ describe JSON::Api::Vanilla do
   it "should return nil for errors when there are no errors" do
     expect(doc.errors).to be_nil
   end
+
+  it "should raise an error if the document does not contain required root elements" do
+    json = <<-JSON
+    {
+      "jsonapi": { "version": "1" }
+    }
+    JSON
+    expect do
+      JSON::Api::Vanilla.parse(json)
+    end.to raise_error(JSON::Api::Vanilla::InvalidRootStructure)
+  end
 end

@@ -3,6 +3,7 @@ require "json"
 
 module JSON::Api; end
 module JSON::Api::Vanilla
+  class InvalidRootStructure < StandardError; end
 
   # Convert a String JSON API payload to vanilla Ruby objects.
   #
@@ -31,6 +32,7 @@ module JSON::Api::Vanilla
   # @param hash [Hash] parsed JSON API payload.
   # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
   def self.build(hash)
+    naive_validate(hash)
     # Object storage.
     container = Module.new
     superclass = Class.new
@@ -164,6 +166,21 @@ module JSON::Api::Vanilla
        .gsub(/([a-z\d])([A-Z])/,'\1_\2')
        .tr("-", "_")
        .downcase
+  end
+
+  # Naïvely validate the top level document structure
+  # @param hash [Hash] json:api document as a hash
+  # @raise [InvalidRootStructure] raised if the document doesn't have
+  # data, errors nor meta objects at its root.
+  def self.naive_validate(hash)
+    root_keys = %w(data errors meta)
+    present_structures = root_keys.map do |key|
+      obj = hash[key]
+      obj.respond_to?(:empty?) ? !obj.empty? : !!obj
+    end
+    if present_structures.none?
+      raise InvalidRootStructure.new("JSON:API document must contain at least one of these objects: #{root_keys.join(', ')}")
+    end
   end
 
   class Document
