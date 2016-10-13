@@ -42,7 +42,7 @@ fields:
   the links defined in that relationship, as a Hash.
 - `meta` is a Hash from objects to their meta information (a Hash).
 - `find('type', 'id')` returns the object with that type and that id.
-- `findAll('type')` returns an Array of all objects with that type.
+- `find_all('type')` returns an Array of all objects with that type.
 - `keys` is a Hash from objects to a Hash from their original field names
   (non-snake\_case'd) to the corresponding object.
 
