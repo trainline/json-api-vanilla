@@ -85,4 +85,10 @@ describe JSON::Api::Vanilla do
       JSON::Api::Vanilla.parse(json)
     end.to raise_error(JSON::Api::Vanilla::InvalidRootStructure)
   end
+
+  it "should not raise any errors if the document contains root elements as symbols" do
+    expect do
+      JSON::Api::Vanilla.naive_validate(data: { id: 1, type: 'mvp' })
+    end.to_not raise_error
+  end
 end

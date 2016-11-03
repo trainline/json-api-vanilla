@@ -175,7 +175,7 @@ module JSON::Api::Vanilla
   def self.naive_validate(hash)
     root_keys = %w(data errors meta)
     present_structures = root_keys.map do |key|
-      obj = hash[key]
+      obj = hash[key] || hash[key.to_sym]
       obj.respond_to?(:empty?) ? !obj.empty? : !!obj
     end
     if present_structures.none?
