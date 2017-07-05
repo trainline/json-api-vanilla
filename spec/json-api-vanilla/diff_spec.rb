@@ -91,4 +91,10 @@ describe JSON::Api::Vanilla do
       JSON::Api::Vanilla.naive_validate(data: { id: 1, type: 'mvp' })
     end.to_not raise_error
   end
+
+  it "should not raise any errors if the document contains an empty array for data" do
+    expect do
+      JSON::Api::Vanilla.naive_validate(data: [])
+    end.to_not raise_error
+  end
 end

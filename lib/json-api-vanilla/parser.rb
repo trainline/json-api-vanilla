@@ -173,12 +173,9 @@ module JSON::Api::Vanilla
   # @raise [InvalidRootStructure] raised if the document doesn't have
   # data, errors nor meta objects at its root.
   def self.naive_validate(hash)
-    root_keys = %w(data errors meta)
-    present_structures = root_keys.map do |key|
-      obj = hash[key] || hash[key.to_sym]
-      obj.respond_to?(:empty?) ? !obj.empty? : !!obj
-    end
-    if present_structures.none?
+    root_keys = %i(data errors meta)
+    present_structures = root_keys & hash.keys.map(&:to_sym)
+    if present_structures.empty?
       raise InvalidRootStructure.new("JSON:API document must contain at least one of these objects: #{root_keys.join(', ')}")
     end
   end
