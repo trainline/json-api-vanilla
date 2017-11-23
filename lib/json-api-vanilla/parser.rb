@@ -74,7 +74,6 @@ module JSON::Api::Vanilla
 
     # Now that all objects have been created, we can link everything together.
     obj_hashes.each do |o_hash|
-      klass = container.const_get(ruby_class_name(o_hash['type']).to_sym)
       obj = objects[[o_hash['type'], o_hash['id']]]
       if o_hash['relationships']
         o_hash['relationships'].each do |key, value|
