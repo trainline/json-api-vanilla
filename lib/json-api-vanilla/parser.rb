@@ -39,10 +39,10 @@ module JSON::Api::Vanilla
 
     data_hash = hash['data']
     data_hash_array = if data_hash.is_a?(Array)
-      data_hash
-    else
-      [data_hash].compact
-    end
+                        data_hash
+                      else
+                        [data_hash].compact
+                      end
     obj_hashes = (hash['included'] || []) + data_hash_array
     errors = hash['errors']
 
@@ -68,6 +68,7 @@ module JSON::Api::Vanilla
       end
       if o_hash['links']
         links[obj] = o_hash['links']
+        set_key(obj, 'links', o_hash['links'], original_keys)
       end
       objects[[obj.type, obj.id]] = obj
     end
@@ -100,17 +101,17 @@ module JSON::Api::Vanilla
 
     # Create the main object.
     data = if data_hash.is_a?(Array)
-      data_hash.map do |o_hash|
-        objects[[o_hash['type'], o_hash['id']]]
-      end
-    elsif data_hash
-      objects[[data_hash['type'], data_hash['id']]]
-    end
+             data_hash.map do |o_hash|
+               objects[[o_hash['type'], o_hash['id']]]
+             end
+           elsif data_hash
+             objects[[data_hash['type'], data_hash['id']]]
+           end
     links[data] = hash['links']
     meta[data] = hash['meta']
     Document.new(data, links: links, rel_links: rel_links, meta: meta,
-                 objects: objects, keys: original_keys, errors: errors,
-                 container: container, superclass: superclass)
+                       objects: objects, keys: original_keys, errors: errors,
+                       container: container, superclass: superclass)
   end
 
   def self.prepare_class(hash, superclass, container)
@@ -122,6 +123,7 @@ module JSON::Api::Vanilla
     end
     add_accessor(klass, 'id')
     add_accessor(klass, 'type')
+    add_accessor(klass, 'links')
     attr_keys = hash['attributes'] ? hash['attributes'].keys : []
     rel_keys = hash['relationships'] ? hash['relationships'].keys : []
     (attr_keys + rel_keys).each do |key|
@@ -162,9 +164,9 @@ module JSON::Api::Vanilla
   # identifier.
   def self.ruby_ident_name(name)
     name.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
-       .gsub(/([a-z\d])([A-Z])/,'\1_\2')
-       .tr("-", "_")
-       .downcase
+      .gsub(/([a-z\d])([A-Z])/,'\1_\2')
+      .tr("-", "_")
+      .downcase
   end
 
   # Naïvely validate the top level document structure
@@ -198,8 +200,8 @@ module JSON::Api::Vanilla
     attr_reader :container
     attr_reader :superclass
     def initialize(data, links: {}, rel_links: {}, meta: {},
-                   keys: {}, objects: {}, errors: [],
-                   container: Module.new, superclass: Class.new)
+                         keys: {}, objects: {}, errors: [],
+                         container: Module.new, superclass: Class.new)
       @data = data
       @links = links
       @rel_links = rel_links
