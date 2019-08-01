@@ -68,6 +68,7 @@ module JSON::Api::Vanilla
       end
       if o_hash['links']
         links[obj] = o_hash['links']
+        set_key(obj, 'links', o_hash['links'], original_keys)
       end
       objects[[obj.type, obj.id]] = obj
     end
@@ -122,6 +123,7 @@ module JSON::Api::Vanilla
     end
     add_accessor(klass, 'id')
     add_accessor(klass, 'type')
+    add_accessor(klass, 'links')
     attr_keys = hash['attributes'] ? hash['attributes'].keys : []
     rel_keys = hash['relationships'] ? hash['relationships'].keys : []
     (attr_keys + rel_keys).each do |key|

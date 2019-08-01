@@ -97,4 +97,27 @@ describe JSON::Api::Vanilla do
       JSON::Api::Vanilla.naive_validate(data: [])
     end.to_not raise_error
   end
+
+  it "should include resources links on the data object" do
+    expect(doc.data[0].links["self"]).to eql("http://example.com/articles/1")
+  end
+
+  it "should include resource links when the data object is not an array" do
+    json = <<-JSON
+    {
+      "data": {
+        "type": "articles",
+        "id": "1",
+        "attributes": {
+          "title": "JSON API paints my bikeshed!"
+        },
+        "links": {
+          "self": "http://example.com/articles/1"
+        }
+      }
+    }
+    JSON
+    doc = JSON::Api::Vanilla.parse(json)
+    expect(doc.data.links["self"]).to eql("http://example.com/articles/1")
+  end
 end
