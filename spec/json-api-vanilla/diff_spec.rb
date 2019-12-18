@@ -97,4 +97,21 @@ describe JSON::Api::Vanilla do
       JSON::Api::Vanilla.naive_validate(data: [])
     end.to_not raise_error
   end
+
+  describe '.prepare_class' do
+    let(:container) {Module.new}
+    let(:superclass) {Class.new}
+    let(:hash) {{'type' => 'test-classes'}}
+    subject {described_class.prepare_class(hash, superclass, container)}
+
+    context 'when same name class in global scope' do
+      class TestClasses
+      end
+
+      it 'should create dynamic class in container' do
+        subject
+        expect(container.constants).to include(:TestClasses)
+      end
+    end
+  end
 end

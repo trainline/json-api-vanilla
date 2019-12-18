@@ -115,7 +115,7 @@ module JSON::Api::Vanilla
 
   def self.prepare_class(hash, superclass, container)
     name = ruby_class_name(hash['type']).to_sym
-    if container.const_defined?(name)
+    if container.constants.include?(name)
       klass = container.const_get(name)
     else
       klass = generate_object(name, superclass, container)
