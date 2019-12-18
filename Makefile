@@ -2,4 +2,7 @@
 install:
 	gem build json-api-vanilla.gemspec && gem install ./json-api-vanilla-*.gem
 
-.PHONY: install
+test:
+	rspec
+
+.PHONY: install test
