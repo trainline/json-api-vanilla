@@ -1,6 +1,6 @@
-# JSON API *VANILLA*
+# JSON API _VANILLA_
 
-Deserialize JSON API formats into *vanilla* Ruby objects.
+Deserialize JSON API formats into _vanilla_ Ruby objects.
 The simplest JSON API library at all altitudes above Earth centre.
 
 ```ruby
@@ -38,13 +38,14 @@ fields:
 - `errors` is an array containing [errors](http://jsonapi.org/format/#error-objects). Each error is a Hash.
 - `links` is a Hash from objects (obtained from `data`) to their links, as a
   Hash.
+  - A `links` Hash is also included as an attribute on each `data` object (ie `data.links` or `data[0].links`).
 - `rel_links` is a Hash from objects' relationships (obtained from `data`) to
   the links defined in that relationship, as a Hash.
 - `meta` is a Hash from objects to their meta information (a Hash).
 - `find('type', 'id')` returns the object with that type and that id.
 - `find_all('type')` returns an Array of all objects with that type.
 - `keys` is a Hash from objects to a Hash from their original field names
-  (non-snake\_case'd) to the corresponding object.
+  (non-snake_case'd) to the corresponding object.
 
 # License
 
