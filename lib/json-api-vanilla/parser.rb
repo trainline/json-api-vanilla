@@ -78,11 +78,11 @@ module JSON::Api::Vanilla
               # One-to-many relationship.
               ref = data.map do |ref_hash|
                 klass = prepare_class(ref_hash, superclass, container)
-                objects[[ref_hash['type'], ref_hash['id']]] || prepare_object(ref_hash, klass, original_keys)
+                objects[[ref_hash['type'], ref_hash['id']]] || prepare_object(ref_hash, klass)
               end
             else
               klass = prepare_class(data, superclass, container)
-              ref = objects[[data['type'], data['id']]] || prepare_object(data, klass, original_keys)
+              ref = objects[[data['type'], data['id']]] || prepare_object(data, klass)
             end
           end
 
@@ -127,7 +127,7 @@ module JSON::Api::Vanilla
     klass
   end
 
-  def self.prepare_object(hash, klass, original_keys)
+  def self.prepare_object(hash, klass, original_keys = {})
     (klass.new).tap do |obj|
       obj.type = hash['type']
       obj.id = hash['id']
