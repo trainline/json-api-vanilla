@@ -122,4 +122,24 @@ describe JSON::Api::Vanilla do
       end
     end
   end
+
+  describe '.prepare_object' do
+    let(:data) do
+      {
+        'type' => 'example',
+        'id' => '1',
+        'attributes' => {
+          'name' => 'example name'
+        }
+      }
+    end
+    let(:klass) { described_class.prepare_class(data, Class.new, Module.new) }
+    subject { described_class.prepare_object(data, klass) }
+
+    it 'creates an object with the attributes mapped' do
+      expect(subject.type).to eql(data['type'])
+      expect(subject.id).to eql(data['id'])
+      expect(subject.name).to eql(data['attributes']['name'])
+    end
+  end
 end
