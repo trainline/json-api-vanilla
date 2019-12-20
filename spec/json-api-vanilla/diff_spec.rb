@@ -20,6 +20,14 @@ describe JSON::Api::Vanilla do
     expect(doc.links[doc.data]['self']).to eql("http://example.com/articles")
   end
 
+  it "should read objects that are only in relationships of included" do
+    expect(doc.data.first.comments.first.post.id).to eql("42")
+  end
+
+  it "should read objects that are only in relationships of included when it is an array" do
+    expect(doc.data.first.comments.first.tags[0].id).to eql("42")
+  end
+
   it "should find objects by type and id" do
     expect(doc.find('comments', '5').body).to eql("First!")
   end
