@@ -77,12 +77,22 @@ module JSON::Api::Vanilla
             if data.is_a?(Array)
               # One-to-many relationship.
               ref = data.map do |ref_hash|
-                klass = prepare_class(ref_hash, superclass, container)
-                objects[[ref_hash['type'], ref_hash['id']]] || prepare_object(ref_hash, klass)
+                _ref = objects[[ref_hash['type'], ref_hash['id']]]
+
+                if _ref.nil?
+                  klass = prepare_class(ref_hash, superclass, container)
+                  _ref = prepare_object(ref_hash, klass)
+                end
+
+                _ref
               end
             else
-              klass = prepare_class(data, superclass, container)
-              ref = objects[[data['type'], data['id']]] || prepare_object(data, klass)
+              ref = objects[[data['type'], data['id']]]
+
+              if ref.nil?
+                klass = prepare_class(data, superclass, container)
+                ref = prepare_object(data, klass)
+              end
             end
           end
 
