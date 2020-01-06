@@ -58,17 +58,12 @@ module JSON::Api::Vanilla
 
     obj_hashes.each do |o_hash|
       klass = prepare_class(o_hash, superclass, container)
-      obj = klass.new
-      obj.type = o_hash['type']
-      obj.id = o_hash['id']
-      if o_hash['attributes']
-        o_hash['attributes'].each do |key, value|
-          set_key(obj, key, value, original_keys)
-        end
-      end
+      obj = prepare_object(o_hash, klass, original_keys)
+
       if o_hash['links']
         links[obj] = o_hash['links']
       end
+
       objects[[obj.type, obj.id]] = obj
     end
 
@@ -82,10 +77,22 @@ module JSON::Api::Vanilla
             if data.is_a?(Array)
               # One-to-many relationship.
               ref = data.map do |ref_hash|
-                objects[[ref_hash['type'], ref_hash['id']]]
+                _ref = objects[[ref_hash['type'], ref_hash['id']]]
+
+                if _ref.nil?
+                  klass = prepare_class(ref_hash, superclass, container)
+                  _ref = prepare_object(ref_hash, klass)
+                end
+
+                _ref
               end
             else
               ref = objects[[data['type'], data['id']]]
+
+              if ref.nil?
+                klass = prepare_class(data, superclass, container)
+                ref = prepare_object(data, klass)
+              end
             end
           end
 
@@ -128,6 +135,18 @@ module JSON::Api::Vanilla
       add_accessor(klass, key)
     end
     klass
+  end
+
+  def self.prepare_object(hash, klass, original_keys = {})
+    (klass.new).tap do |obj|
+      obj.type = hash['type']
+      obj.id = hash['id']
+      if hash['attributes']
+        hash['attributes'].each do |key, value|
+          set_key(obj, key, value, original_keys)
+        end
+      end
+    end
   end
 
   def self.generate_object(ruby_name, superclass, container)

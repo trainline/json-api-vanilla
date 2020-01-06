@@ -56,6 +56,17 @@
     "relationships": {
       "author": {
         "data": { "type": "people", "id": "2" }
+      },
+      "tags": {
+        "data": [
+          { "type": "tag", "id": "42" }
+        ]
+      },
+      "post": {
+        "data": {
+          "type": "post",
+          "id": "42"
+        }
       }
     },
     "links": {

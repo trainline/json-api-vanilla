@@ -20,6 +20,14 @@ describe JSON::Api::Vanilla do
     expect(doc.links[doc.data]['self']).to eql("http://example.com/articles")
   end
 
+  it "should read objects that are only in relationships of included" do
+    expect(doc.data.first.comments.first.post.id).to eql("42")
+  end
+
+  it "should read objects that are only in relationships of included when it is an array" do
+    expect(doc.data.first.comments.first.tags[0].id).to eql("42")
+  end
+
   it "should find objects by type and id" do
     expect(doc.find('comments', '5').body).to eql("First!")
   end
@@ -112,6 +120,26 @@ describe JSON::Api::Vanilla do
         subject
         expect(container.constants).to include(:TestClasses)
       end
+    end
+  end
+
+  describe '.prepare_object' do
+    let(:data) do
+      {
+        'type' => 'example',
+        'id' => '1',
+        'attributes' => {
+          'name' => 'example name'
+        }
+      }
+    end
+    let(:klass) { described_class.prepare_class(data, Class.new, Module.new) }
+    subject { described_class.prepare_object(data, klass) }
+
+    it 'creates an object with the attributes mapped' do
+      expect(subject.type).to eql(data['type'])
+      expect(subject.id).to eql(data['id'])
+      expect(subject.name).to eql(data['attributes']['name'])
     end
   end
 end
