@@ -72,6 +72,9 @@ module JSON::Api::Vanilla
       obj = objects[[o_hash['type'], o_hash['id']]]
       if o_hash['relationships']
         o_hash['relationships'].each do |key, value|
+          # Instantiate ref initially
+          ref = nil
+
           if value['data']
             data = value['data']
             if data.is_a?(Array)
@@ -96,7 +99,6 @@ module JSON::Api::Vanilla
             end
           end
 
-          ref = ref || Object.new
           set_key(obj, key, ref, original_keys)
 
           rel_links[ref] = value['links']
