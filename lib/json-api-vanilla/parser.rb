@@ -72,6 +72,8 @@ module JSON::Api::Vanilla
       obj = objects[[o_hash['type'], o_hash['id']]]
       if o_hash['relationships']
         o_hash['relationships'].each do |key, value|
+          naive_validate_relationship_object(value)
+
           if value['data']
             data = value['data']
             if data.is_a?(Array)
@@ -195,6 +197,18 @@ module JSON::Api::Vanilla
     present_structures = root_keys & hash.keys.map(&:to_sym)
     if present_structures.empty?
       raise InvalidRootStructure.new("JSON:API document must contain at least one of these objects: #{root_keys.join(', ')}")
+    end
+  end
+
+  # Naïvely validate a relationship object.
+  # @param hash [Hash] json:api document as a hash
+  # @raise [InvalidRootStructure] raised if the document doesn't have data, errors nor meta objects
+  # at its root.
+  def self.naive_validate_relationship_object(hash)
+    root_keys = %i(data meta links)
+    present_structures = root_keys & hash.keys.map(&:to_sym)
+    if present_structures.empty?
+      raise InvalidRootStructure.new("JSON:API relationship must contain at least one of these objects: #{root_keys.join(', ')}")
     end
   end
 

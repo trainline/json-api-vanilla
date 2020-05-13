@@ -94,6 +94,35 @@ describe JSON::Api::Vanilla do
     end.to raise_error(JSON::Api::Vanilla::InvalidRootStructure)
   end
 
+  it "should raise an error if the document contains an unrecognized element" do
+    json = <<-JSON
+    {
+      "type": "object",
+      "id": "123",
+      "attributes": {},
+      "foo": "bar"
+    }
+    JSON
+    expect do
+      JSON::Api::Vanilla.parse(json)
+    end.to raise_error(JSON::Api::Vanilla::InvalidRootStructure)
+  end
+
+  it "should raise an error if the document has a malformed link" do
+    json = <<-JSON
+    {
+      "data": {
+        "type": "cycle",
+        "id": "1",
+        "relationships": { "cycle": { "type": "cycle", "id": "2" } }
+      }
+    }
+    JSON
+    expect do
+      JSON::Api::Vanilla.parse(json)
+    end.to raise_error(JSON::Api::Vanilla::InvalidRootStructure)
+  end
+
   it "should not raise any errors if the document contains root elements as symbols" do
     expect do
       JSON::Api::Vanilla.naive_validate(data: { id: 1, type: 'mvp' })
