@@ -108,7 +108,7 @@ describe JSON::Api::Vanilla do
     end.to raise_error(JSON::Api::Vanilla::InvalidRootStructure)
   end
 
-  it "should raise an error if the document has a malformed link" do
+  it "should raise an error if a relationship object does not have one of the required fields" do
     json = <<-JSON
     {
       "data": {
