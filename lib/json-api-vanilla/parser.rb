@@ -32,6 +32,8 @@ module JSON::Api::Vanilla
   # @param hash [Hash] parsed JSON API payload.
   # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
   def self.build(hash)
+    hash = normalize_hash(hash)
+
     naive_validate(hash)
     # Object storage.
     container = Module.new
@@ -209,6 +211,19 @@ module JSON::Api::Vanilla
     present_structures = root_keys & hash.keys.map(&:to_sym)
     if present_structures.empty?
       raise InvalidRootStructure.new("JSON:API relationship must contain at least one of these objects: #{root_keys.join(', ')}")
+    end
+  end
+
+  def self.normalize_hash(object)
+    case object
+    when Hash
+      object.each_with_object({}) do |(key, value), result|
+        result[key.to_s] = normalize_hash(value)
+      end
+    when Array
+      object.map { |e| normalize_hash(e) }
+    else
+      object
     end
   end
 
