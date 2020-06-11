@@ -171,4 +171,78 @@ describe JSON::Api::Vanilla do
       expect(subject.name).to eql(data['attributes']['name'])
     end
   end
+
+  describe '.build(hash)' do
+    context 'with stringified keys' do
+      let(:hash) {
+        {
+          'data' => [
+            {
+              'id' => 'a123',
+              'type' => 'user',
+              'attributes' => {
+                'activated_at' => '2020-06-11'
+              }
+            }
+          ]
+        }
+      }
+      subject { described_class.build(hash) }
+
+      it 'ceates a Document with data' do
+        expect(subject.data).to be_a(Array)
+        expect(subject.data[0].id).to eql(hash['data'][0]['id'])
+        expect(subject.data[0].type).to eql(hash['data'][0]['type'])
+        expect(subject.data[0].activated_at).to eql(hash['data'][0]['attributes']['activated_at'])
+      end
+    end
+
+    context 'with symbolized in keys' do
+      let(:hash) {
+        {
+          data: [
+            {
+              id: 'a123',
+              type: 'user',
+              attributes: {
+                activated_at: '2020-06-11'
+              }
+            }
+          ]
+        }
+      }
+      subject { described_class.build(hash) }
+
+      it 'ceates a Document with data' do
+        expect(subject.data).to be_a(Array)
+        expect(subject.data[0].id).to eql(hash[:data][0][:id])
+        expect(subject.data[0].type).to eql(hash[:data][0][:type])
+        expect(subject.data[0].activated_at).to eql(hash[:data][0][:attributes][:activated_at])
+      end
+    end
+
+  end
+
+  describe '.normalize_hash' do
+    let(:hash) {
+      {
+        'data' => [
+          {
+            id: 1,
+            type: 'user',
+            'attributes' => {
+              'activated_at' => '2020-06-11'
+            }
+          }
+        ]
+      }
+    }
+
+    subject { described_class.normalize_hash(hash) }
+
+    it 'returns hash with stringified keys' do
+      expect(subject['data'][0]['id']).to eql(hash['data'][0][:id])
+      expect(subject['data'][0]['type']).to eql(hash['data'][0][:type])
+    end
+  end
 end
