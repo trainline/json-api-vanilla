@@ -135,6 +135,17 @@ describe JSON::Api::Vanilla do
     end.to_not raise_error
   end
 
+  it "should use user specified container and superclass" do
+    my_container = Module.new
+    my_superclass = Class.new
+    my_commentsclass = Class.new(my_superclass)
+    my_container.const_set("Comments", my_commentsclass)
+
+    doc = JSON::Api::Vanilla.parse(IO.read("#{__dir__}/example.json"), container: my_container, superclass: my_superclass)
+    expect(doc.data[0].class.superclass).to eql(my_superclass)
+    expect(doc.data[0].comments[0].class).to eql(my_commentsclass)
+  end
+
   describe '.prepare_class' do
     let(:container) {Module.new}
     let(:superclass) {Class.new}
