@@ -15,9 +15,9 @@ module JSON::Api::Vanilla
   #
   # @param json [String] the JSON API payload.
   # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
-  def self.parse(json)
+  def self.parse(json, container: Module.new, superclass: Class.new)
     hash = JSON.parse(json)
-    build(hash)
+    build(hash, container: container, superclass: superclass)
   end
 
   # Convert a ruby hash JSON API representation to vanilla Ruby objects.
@@ -31,11 +31,8 @@ module JSON::Api::Vanilla
   #
   # @param hash [Hash] parsed JSON API payload.
   # @return [JSON::Api::Vanilla::Document] a wrapper for the objects.
-  def self.build(hash)
+  def self.build(hash, container: Module.new, superclass: Class.new)
     naive_validate(hash)
-    # Object storage.
-    container = Module.new
-    superclass = Class.new
 
     data_hash = hash['data']
     data_hash_array = if data_hash.is_a?(Array)
