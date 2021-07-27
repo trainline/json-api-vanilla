@@ -44,6 +44,10 @@ describe JSON::Api::Vanilla do
     expect(doc.meta[doc.data]['from']).to eql("http://jsonapi.org")
   end
 
+  it "should give access to nested meta information" do
+    expect(doc.meta[doc.data[0].author]['version']).to eql("7")
+  end
+
   it "should support reference cycles" do
     json = <<-JSON
     {

@@ -46,6 +46,9 @@
     },
     "links": {
       "self": "http://example.com/people/9"
+    },
+    "meta": {
+      "version": "7"
     }
   }, {
     "type": "comments",
