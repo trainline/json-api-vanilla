@@ -52,6 +52,7 @@ module JSON::Api::Vanilla
     links = {}  # Object links.
     rel_links = {}  # Relationship links.
     meta = {}  # Meta information.
+    rel_meta = {}  # Relationship meta information.
     # Map from objects to map from keys to values, for use when two keys are
     # converted to the same ruby method identifier.
     original_keys = {}
@@ -62,6 +63,10 @@ module JSON::Api::Vanilla
 
       if o_hash['links']
         links[obj] = o_hash['links']
+      end
+
+      if o_hash['meta']
+        meta[obj] = o_hash['meta']
       end
 
       objects[[obj.type, obj.id]] = obj
@@ -100,9 +105,8 @@ module JSON::Api::Vanilla
 
           ref = ref || Object.new
           set_key(obj, key, ref, original_keys)
-
           rel_links[ref] = value['links']
-          meta[ref] = value['meta']
+          rel_meta[ref] = value['meta']
         end
       end
     end
